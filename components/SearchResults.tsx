@@ -1,5 +1,22 @@
-import { useMemo } from "react";
 import { ProductItem } from "./ProductItem";
+
+import { List, ListRowRenderer } from "react-virtualized";
+
+/** 
+ * O que o react-virtualizer faz? Conceito de virtualização
+ * 
+ * No caso, quando há muitos dados sendo exibidos em tela, sendo, um lista muito
+ * grande ou uma table acom muitos dados. Podemos usar o conceito de virtualização
+ * utilizando a lib react-virtualizer.
+ * 
+ * Nesse caso, o List de dentro da biblioteca irá renderizar uma quantidade de items,
+ * e só irá renderizar o restante a medida que movemos o scroll.
+ * Não irá carregar tudo de uma vez só, diminuindo assim o tempo inicial de renderização.
+ */
+
+/**
+ * Utilizar o bundle analyzer para verificar as libs que mais causam impacto no app;
+ */
 
 interface SearchResultsProps {
   totalPrice: number;
@@ -17,6 +34,17 @@ export function SearchResults({
   onAddToWishList,
   totalPrice,
 }: SearchResultsProps) {
+  const rowRenderer: ListRowRenderer = ({ index, key, style }) => {
+    return (
+      <div key={key} style={style}>
+        <ProductItem
+          onAddToWishList={onAddToWishList}
+          product={results[index]}
+        />
+      </div>
+    );
+  };
+
   // Mesmo utilizando o useMemo, há um custo de processamento, pois
   // O react tem que verificar se esse RESULTS (nesse caso) não mudou.
 
@@ -30,15 +58,14 @@ export function SearchResults({
   return (
     <div>
       <h2>{totalPrice}</h2>
-      {results.map((product) => {
-        return (
-          <ProductItem
-            key={product.id}
-            onAddToWishList={onAddToWishList}
-            product={product}
-          />
-        );
-      })}
+      <List
+        height={300}
+        rowHeight={30}
+        width={900}
+        overscanRowCount={5}
+        rowCount={results.length}
+        rowRenderer={rowRenderer}
+      />
     </div>
   );
 }
